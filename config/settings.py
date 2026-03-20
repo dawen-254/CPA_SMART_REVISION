@@ -74,8 +74,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+import dj_database_url
+
 # Database
-if config("DB_ENGINE", default="") == "django.db.backends.postgresql":
+# If DATABASE_URL is set, use it (Railway/Production)
+if config("DATABASE_URL", default=""):
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=config("DATABASE_URL"),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+elif config("DB_ENGINE", default="") == "django.db.backends.postgresql":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",

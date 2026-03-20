@@ -1,1 +1,2 @@
-web: gunicorn CPA_SMART_REVISION.wsgi
+web: gunicorn config.wsgi:application
+release: python manage.py migrate --noinput
