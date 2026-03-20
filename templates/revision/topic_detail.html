@@ -1,0 +1,652 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ topic.title }} - CPA Smart Revision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .topic-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .topic-content-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .topic-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1rem;
+    }
+
+    .topic-metadata {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .metadata-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #4a5568;
+        font-size: 0.95rem;
+    }
+
+    .metadata-icon {
+        color: #667eea;
+        font-size: 1.2rem;
+    }
+
+    .topic-body {
+        color: #2d3748;
+        line-height: 1.8;
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .topic-body h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        color: #2d3748;
+    }
+
+    .topic-body h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        color: #2d3748;
+    }
+
+    .topic-body p {
+        margin-bottom: 1rem;
+    }
+
+    .topic-body ul, .topic-body ol {
+        margin-left: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .topic-body li {
+        margin-bottom: 0.5rem;
+    }
+
+    .topic-body code {
+        background: #f7fafc;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        color: #e24c4c;
+    }
+
+    .topic-body pre {
+        background: #2d3748;
+        color: #e2e8f0;
+        padding: 1rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin-bottom: 1rem;
+    }
+
+    .topic-body pre code {
+        color: #e2e8f0;
+        background: none;
+        padding: 0;
+    }
+
+    .progress-section {
+        background: #f7fafc;
+        border-left: 4px solid #667eea;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .progress-section h5 {
+        margin-bottom: 1rem;
+        color: #2d3748;
+    }
+
+    .mark-complete-btn {
+        padding: 0.75rem 1.5rem;
+        background: #48bb78;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .mark-complete-btn:hover {
+        background: #38a169;
+        transform: translateY(-2px);
+    }
+
+    .mark-complete-btn.completed {
+        background: #a0aec0;
+        cursor: default;
+    }
+
+    .navigation-section {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+        gap: 1rem;
+    }
+
+    .nav-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+    .nav-btn:hover {
+        background: #764ba2;
+        transform: translateY(-2px);
+    }
+
+    .nav-btn.disabled {
+        background: #cbd5e0;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .breadcrumb-nav {
+        margin-bottom: 2rem;
+    }
+
+    .resources-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .resource-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s;
+    }
+
+    .resource-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .resource-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .resource-card h5 {
+        margin-bottom: 0.5rem;
+        color: #2d3748;
+    }
+
+    .resource-card p {
+        margin-bottom: 1rem;
+        color: #718096;
+        font-size: 0.9rem;
+    }
+
+    .resource-btn {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .resource-btn:hover {
+        background: #764ba2;
+        transform: translateY(-2px);
+    }
+
+    .video-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 12px;
+    }
+
+    @media (max-width: 768px) {
+        .topic-header {
+            padding: 2rem 0;
+        }
+
+        .topic-title {
+            font-size: 1.5rem;
+        }
+
+        .topic-metadata {
+            gap: 1rem;
+        }
+
+        .navigation-section {
+            flex-direction: column;
+        }
+
+        .resources-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Topic Header -->
+<div class="topic-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-0">{{ topic.title }}</h1>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{% url 'revision:flashcard_study' topic.id %}" class="btn btn-outline-light btn-sm me-2 shadow-sm">
+                    <i class="bi bi-card-text me-1"></i> Flashcards
+                </a>
+                <a href="{% url 'ai_tutor:topic_chat' topic.id %}" class="btn btn-light btn-sm me-2 shadow-sm">
+                    <i class="bi bi-robot me-1"></i> Ask AI Tutor
+                </a>
+                {% if progress.is_completed %}
+                    <span class="badge bg-success">
+                        <i class="bi bi-check-circle-fill"></i> Completed
+                    </span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">
+                        <i class="bi bi-hourglass-split"></i> In Progress
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="breadcrumb-nav">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'content:level_detail' unit.level.id unit.part.name %}">{{ unit.level.get_name_display }} - {{ unit.part.get_name_display }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'content:unit_detail' unit.slug %}">{{ unit.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ topic.title }}</li>
+        </ol>
+    </nav>
+
+    <!-- Topic Content -->
+    <div class="topic-content-section">
+        <h2 class="topic-title">{{ topic.title }}</h2>
+
+        <div class="topic-metadata">
+            {% if topic.estimated_minutes %}
+            <div class="metadata-item">
+                <i class="bi bi-hourglass-split metadata-icon"></i>
+                <span>{{ topic.estimated_minutes }} minutes read time</span>
+            </div>
+            {% endif %}
+
+            {% if topic.difficulty %}
+            <div class="metadata-item">
+                <i class="bi bi-graph-up metadata-icon"></i>
+                <span>{{ topic.difficulty|title }} difficulty</span>
+            </div>
+            {% endif %}
+
+            <div class="metadata-item">
+                <i class="bi bi-eye metadata-icon"></i>
+                <span>{{ progress.views_count }} views</span>
+            </div>
+        </div>
+
+        {% if topic.summary %}
+        <div style="background: #f7fafc; border-left: 4px solid #667eea; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+            <h5 style="margin-bottom: 0.5rem; color: #2d3748;">Summary</h5>
+            <p style="margin: 0; color: #4a5568;">{{ topic.summary }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Progress Tracking -->
+        <div class="progress-section">
+            <h5>Your Progress</h5>
+            <div style="display: flex; align-items: center; gap: 1rem;" id="progress-container">
+                {% if progress.is_completed %}
+                    <span class="badge bg-success" id="completion-badge">
+                        <i class="bi bi-check-circle-fill"></i> Completed on <span id="completion-date">{{ progress.completion_date|date:"M d, Y" }}</span>
+                    </span>
+                {% else %}
+                    <form method="post" style="display: inline;" id="mark-complete-form">
+                        {% csrf_token %}
+                        <button type="button" class="mark-complete-btn" id="mark-complete-btn" onclick="markTopicComplete(event)">
+                            <i class="bi bi-check-lg"></i> Mark as Complete
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Learning Resources -->
+        {% if topic.video_url or topic.pdf_file %}
+        <div class="resources-grid">
+            <div class="resource-card">
+                <div class="resource-icon" style="color: #667eea;">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <h5>AI Tutor</h5>
+                <p>Have questions? Chat with our AI tutor specifically about this topic.</p>
+                <a href="{% url 'ai_tutor:topic_chat' topic.id %}" class="resource-btn">
+                    <i class="bi bi-chat-dots-fill"></i> Ask Question
+                </a>
+            </div>
+            <div class="resource-card">
+                <div class="resource-icon" style="color: #48bb78;">
+                    <i class="bi bi-card-text"></i>
+                </div>
+                <h5>Flashcards</h5>
+                <p>Master this topic with AI-generated flashcards and spaced repetition.</p>
+                <a href="{% url 'revision:flashcard_study' topic.id %}" class="resource-btn" style="background: #48bb78;">
+                    <i class="bi bi-play-fill"></i> Study Now
+                </a>
+            </div>
+            {% if topic.video_url %}
+            <div class="resource-card">
+                <div class="resource-icon" style="color: #f56565;">
+                    <i class="bi bi-play-circle-fill"></i>
+                </div>
+                <h5>Video Lecture</h5>
+                <p>Watch the video lecture to understand this topic better</p>
+                <a href="{{ topic.video_url }}" target="_blank" class="resource-btn">
+                    <i class="bi bi-play-fill"></i> Watch Video
+                </a>
+            </div>
+            {% endif %}
+
+            {% if topic.pdf_file %}
+            <div class="resource-card">
+                <div class="resource-icon" style="color: #ed8936;">
+                    <i class="bi bi-file-pdf-fill"></i>
+                </div>
+                <h5>Study Materials (PDF)</h5>
+                <p>Download the detailed study materials and notes</p>
+                <a href="{{ topic.pdf_file.url }}" target="_blank" class="resource-btn">
+                    <i class="bi bi-download"></i> Download PDF
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Video Player (if video_url exists) -->
+        {% if topic.video_url %}
+        <div style="margin-bottom: 2rem;">
+            <h3 style="margin-bottom: 1rem;">Video Lecture</h3>
+            {% if 'youtube.com' in topic.video_url or 'youtu.be' in topic.video_url %}
+                {% if 'youtube.com/watch' in topic.video_url %}
+                    {% with video_id=topic.video_url|slice:"?v=31:" %}
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/{{ video_id }}" allowfullscreen></iframe>
+                    </div>
+                    {% endwith %}
+                {% elif 'youtu.be' in topic.video_url %}
+                    {% with video_id=topic.video_url|slice:"9:" %}
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/{{ video_id }}" allowfullscreen></iframe>
+                    </div>
+                    {% endwith %}
+                {% else %}
+                    <div style="background: #f7fafc; border-left: 4px solid #667eea; padding: 1rem; border-radius: 8px;">
+                        <p style="margin: 0;">
+                            <a href="{{ topic.video_url }}" target="_blank" style="color: #667eea; font-weight: 600;">
+                                <i class="bi bi-play-circle"></i> Open Video Link
+                            </a>
+                        </p>
+                    </div>
+                {% endif %}
+            {% elif 'vimeo.com' in topic.video_url %}
+                {% with video_id=topic.video_url|slice:"19:" %}
+                <div class="video-container">
+                    <iframe src="https://player.vimeo.com/video/{{ video_id }}" allowfullscreen></iframe>
+                </div>
+                {% endwith %}
+            {% else %}
+                <div style="background: #f7fafc; border-left: 4px solid #667eea; padding: 1rem; border-radius: 8px;">
+                    <p style="margin: 0;">
+                        <a href="{{ topic.video_url }}" target="_blank" style="color: #667eea; font-weight: 600;">
+                            <i class="bi bi-play-circle"></i> Open Video Link
+                        </a>
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Main Content -->
+        {% if topic.content %}
+        <div class="topic-body">
+            {{ topic.content|linebreaks|safe }}
+        </div>
+        {% endif %}
+
+        <!-- Learning Objectives -->
+        {% if topic.objectives %}
+        <div style="margin-top: 2rem; padding: 1.5rem; background: #f0fdf4; border-left: 4px solid #48bb78; border-radius: 8px;">
+            <h4 style="color: #22543d; margin-top: 0;">Learning Objectives</h4>
+            <div style="color: #274e13;">
+                {{ topic.objectives|linebreaks|safe }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Formulas -->
+        {% if topic.formulas %}
+        <div style="margin-top: 2rem; padding: 1.5rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px;">
+            <h4 style="color: #92400e; margin-top: 0;">Key Formulas</h4>
+            <div style="color: #b45309;">
+                {{ topic.formulas|linebreaks|safe }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Examples -->
+        {% if topic.examples %}
+        <div style="margin-top: 2rem;">
+            <h3>Practical Examples</h3>
+            <div class="topic-body" style="margin-bottom: 0;">
+                {{ topic.examples|linebreaks|safe }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- References -->
+        {% if topic.references %}
+        <div style="margin-top: 2rem; padding: 1.5rem; background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 8px;">
+            <h4 style="color: #1e3a8a; margin-top: 0;">References & Further Reading</h4>
+            <div style="color: #1e40af;">
+                {{ topic.references|linebreaks|safe }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- PDF -->
+        {% if topic.pdf_url %}
+        <div style="margin-top: 2rem; padding: 1.5rem; background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 8px;">
+            <h4 style="color: #1e3a8a; margin-top: 0;">Downloadable PDF</h4>
+            <a href="{{ topic.pdf_url }}" target="_blank" class="mark-complete-btn">
+                <i class="bi bi-file-earmark-pdf"></i> Download PDF
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- You Tube URL -->
+        {% if topic.youtube_url %}
+        <div style="margin-top: 2rem; text-align: center;">
+            <a href="{{ topic.youtube_url }}" target="_blank" class="mark-complete-btn">
+                <i class="bi bi-youtube"></i> Watch Video
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Navigation -->
+        <div class="navigation-section">
+            {% if previous_topic %}
+                <a href="{% url 'revision:topic_detail' previous_topic.slug %}" class="nav-btn">
+                    <i class="bi bi-arrow-left"></i> Previous
+                </a>
+            {% else %}
+                <button class="nav-btn disabled">
+                    <i class="bi bi-arrow-left"></i> Previous
+                </button>
+            {% endif %}
+
+            <a href="{% url 'content:unit_detail' unit.slug %}" class="nav-btn">
+                <i class="bi bi-list-check"></i> Back to Unit
+            </a>
+
+            {% if next_topic %}
+                <a href="{% url 'revision:topic_detail' next_topic.slug %}" class="nav-btn">
+                    Next <i class="bi bi-arrow-right"></i>
+                </a>
+            {% else %}
+                <button class="nav-btn disabled">
+                    Next <i class="bi bi-arrow-right"></i>
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function markTopicComplete(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById('mark-complete-form');
+    const csrfToken = form.querySelector('[name="csrfmiddlewaretoken"]').value;
+    const button = document.getElementById('mark-complete-btn');
+    
+    button.disabled = true;
+    button.innerHTML = '<i class="bi bi-hourglass-split"></i> Marking...';
+    
+    const formData = new FormData();
+    formData.append('action', 'mark_complete');
+    formData.append('csrfmiddlewaretoken', csrfToken);
+    
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const progressContainer = document.getElementById('progress-container');
+            const currentForm = document.getElementById('mark-complete-form');
+            
+            currentForm.remove();
+            
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-success';
+            badge.id = 'completion-badge';
+            badge.innerHTML = `<i class="bi bi-check-circle-fill"></i> Completed on <span id="completion-date">${data.completion_date}</span>`;
+            
+            progressContainer.appendChild(badge);
+            
+            showSuccessMessage('Topic marked as complete! Great work!');
+            
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        button.disabled = false;
+        button.innerHTML = '<i class="bi bi-check-lg"></i> Mark as Complete';
+        showErrorMessage('An error occurred. Please try again.');
+    });
+}
+
+function showSuccessMessage(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '20px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.minWidth = '300px';
+    alertDiv.innerHTML = `
+        <strong><i class="bi bi-check-circle"></i> Success!</strong>
+        <p style="margin: 0;">${message}</p>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+
+function showErrorMessage(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '20px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.minWidth = '300px';
+    alertDiv.innerHTML = `
+        <strong><i class="bi bi-exclamation-circle"></i> Error!</strong>
+        <p style="margin: 0;">${message}</p>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Tutor - CPA Smart Revision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        height: calc(100vh - 200px);
+        display: flex;
+        flex-direction: column;
+    }
+    .chat-history {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+    .message {
+        margin-bottom: 1rem;
+        max-width: 80%;
+    }
+    .message-user {
+        margin-left: auto;
+        background-color: #007bff;
+        color: white;
+        border-radius: 1rem 1rem 0 1rem;
+        padding: 0.75rem 1rem;
+    }
+    .message-assistant {
+        margin-right: auto;
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 1rem 1rem 1rem 0;
+        padding: 0.75rem 1rem;
+    }
+    .chat-sidebar {
+        border-right: 1px solid #dee2e6;
+        height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 chat-sidebar py-3">
+            <h5 class="mb-3 px-3">Recent Chats</h5>
+            <div class="list-group list-group-flush">
+                <a href="{% url 'ai_tutor:chat' %}" class="list-group-item list-group-item-action {% if not current_session %}active{% endif %}">
+                    <i class="bi bi-plus-lg me-2"></i> New Chat
+                </a>
+                {% for session in sessions %}
+                <a href="{% url 'ai_tutor:chat' %}?session_id={{ session.id }}" class="list-group-item list-group-item-action {% if current_session.id == session.id %}active{% endif %}">
+                    {{ session.title }}
+                    <div class="small text-muted">{{ session.created_at|date:"M d, Y" }}</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="col-md-9 py-3">
+            <div class="chat-container">
+                <div class="chat-history" id="chat-history">
+                    {% if not chat_messages %}
+                    <div class="text-center mt-5">
+                        <i class="bi bi-robot text-primary" style="font-size: 4rem;"></i>
+                        <h3>How can I help you today?</h3>
+                        <p class="text-muted">Ask me anything about CPA topics, formulas, or concepts.</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% for message in chat_messages %}
+                    <div class="message message-{{ message.role }}">
+                        {{ message.content|linebreaks }}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Input Area -->
+                <div class="mt-3">
+                    <form id="chat-form" class="input-group">
+                        <input type="text" id="chat-input" class="form-control" placeholder="Type your message here..." required>
+                        <input type="hidden" id="session-id" value="{{ current_session.id|default:'' }}">
+                        <button class="btn btn-primary" type="submit" id="send-btn">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatHistory = document.getElementById('chat-history');
+    const sessionIdInput = document.getElementById('session-id');
+    const sendBtn = document.getElementById('send-btn');
+
+    function appendMessage(role, content) {
+        const div = document.createElement('div');
+        div.className = `message message-${role}`;
+        div.innerHTML = content.replace(/\n/g, '<br>');
+        chatHistory.appendChild(div);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const content = chatInput.value.trim();
+        if (!content) return;
+
+        // Clear input and show user message
+        chatInput.value = '';
+        appendMessage('user', content);
+
+        // Disable input while waiting
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+
+        try {
+            const formData = new FormData();
+            formData.append('content', content);
+            formData.append('session_id', sessionIdInput.value);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            const response = await fetch("{% url 'ai_tutor:send_message' %}", {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            if (data.error) {
+                alert(data.error);
+            } else {
+                appendMessage('assistant', data.content);
+                if (!sessionIdInput.value) {
+                    sessionIdInput.value = data.session_id;
+                    // Optionally refresh page to show session in sidebar
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        } finally {
+            chatInput.disabled = false;
+            sendBtn.disabled = false;
+            chatInput.focus();
+        }
+    });
+
+    // Scroll to bottom on load
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+</script>
+{% endblock %}

@@ -1,0 +1,1 @@
+web: gunicorn CPA_SMART_REVISION.wsgi

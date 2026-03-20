@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout - {{ plan.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg overflow-hidden rounded-4">
+                <div class="row g-0">
+                    <div class="col-md-5 bg-primary text-white p-4 p-xl-5 d-flex flex-column justify-content-center">
+                        <h2 class="fw-bold mb-4">Order Summary</h2>
+                        <div class="mb-4">
+                            <h4 class="text-white-50 mb-1">Plan</h4>
+                            <p class="fs-4 fw-bold mb-0">{{ plan.name }}</p>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="text-white-50 mb-1">Billing Period</h4>
+                            <p class="fs-5 mb-0">{{ plan.get_billing_period_display }}</p>
+                        </div>
+                        <div class="mt-auto">
+                            <hr class="border-white-50">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fs-5">Total Amount</span>
+                                <span class="fs-3 fw-bold">{{ plan.currency }} {{ plan.price|floatformat:0 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-7 bg-white p-4 p-xl-5">
+                        <h3 class="fw-bold mb-4">Payment Method</h3>
+                        
+                        <div class="nav nav-pills mb-4" id="payment-tabs" role="tablist">
+                            <button class="nav-link active me-2" id="mpesa-tab" data-bs-toggle="pill" data-bs-target="#mpesa" type="button" role="tab">
+                                <i class="bi bi-phone me-2"></i> M-Pesa
+                            </button>
+                            <button class="nav-link disabled" id="card-tab" data-bs-toggle="pill" data-bs-target="#card" type="button" role="tab">
+                                <i class="bi bi-credit-card me-2"></i> Card (Soon)
+                            </button>
+                        </div>
+                        
+                        <div class="tab-content" id="payment-tabsContent">
+                            <div class="tab-pane fade show active" id="mpesa" role="tabpanel">
+                                <p class="text-muted mb-4">
+                                    Enter your M-Pesa phone number to receive an STK Push on your phone.
+                                </p>
+                                
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <div class="mb-4">
+                                        <label for="phone_number" class="form-label fw-bold">Phone Number (M-Pesa)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-telephone text-primary"></i></span>
+                                            <input type="tel" name="phone_number" id="phone_number" class="form-control border-start-0 py-3" 
+                                                   placeholder="0712345678" required 
+                                                   value="{{ user.phone_number|default:'' }}">
+                                        </div>
+                                        <div class="form-text mt-2">Format: 07XXXXXXXX or 254XXXXXXXX</div>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm">
+                                        <i class="bi bi-shield-check me-2"></i> Pay Now with M-Pesa
+                                    </button>
+                                </form>
+                                
+                                <div class="mt-4 p-3 bg-light rounded-3 border">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-info-circle-fill text-primary fs-4 me-3"></i>
+                                        <div class="small text-muted">
+                                            By clicking "Pay Now", you'll receive a prompt on your phone to enter your M-Pesa PIN.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{% url 'subscriptions:plans' %}" class="text-decoration-none text-muted">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Plans
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

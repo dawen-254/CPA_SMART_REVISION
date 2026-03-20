@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics - CPA Smart Revision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid #edf2f7;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    .stat-badge {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Performance Analytics</h2>
+            <p class="text-muted">Track your study progress and exam readiness</p>
+        </div>
+        <button class="btn btn-outline-primary btn-sm" onclick="window.print()">
+            <i class="bi bi-download me-1"></i> Export Report
+        </button>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="analytics-card text-center">
+                <div class="text-muted small mb-2 text-uppercase fw-bold">Study Time</div>
+                <h3 class="mb-0">{{ total_study_time }} <small class="text-muted" style="font-size: 0.5em;">MINS</small></h3>
+                <div class="mt-2">
+                    <span class="stat-badge bg-light text-primary border">Total focus time</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="analytics-card text-center">
+                <div class="text-muted small mb-2 text-uppercase fw-bold">Accuracy</div>
+                <h3 class="mb-0">{{ overall_accuracy }}%</h3>
+                <div class="mt-2">
+                    <span class="stat-badge {% if overall_accuracy > 70 %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %} border">
+                        Practice performance
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="analytics-card text-center">
+                <div class="text-muted small mb-2 text-uppercase fw-bold">Topics Mastery</div>
+                <h3 class="mb-0">{{ total_topics_completed }}</h3>
+                <div class="mt-2">
+                    <span class="stat-badge bg-info-subtle text-info border">Syllabus coverage</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="analytics-card text-center">
+                <div class="text-muted small mb-2 text-uppercase fw-bold">Questions</div>
+                <h3 class="mb-0">{{ total_questions_attempted }}</h3>
+                <div class="mt-2">
+                    <span class="stat-badge bg-secondary-subtle text-secondary border">Total attempts</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Study Time Chart -->
+        <div class="col-lg-8">
+            <div class="analytics-card">
+                <h5 class="mb-4">Study Activity (Last 7 Days)</h5>
+                <div class="chart-container">
+                    <canvas id="studyTimeChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Mastery Chart -->
+        <div class="col-lg-4">
+            <div class="analytics-card">
+                <h5 class="mb-4">Confidence Levels</h5>
+                <div class="chart-container">
+                    <canvas id="confidenceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unit Detailed Progress -->
+    <div class="analytics-card">
+        <h5 class="mb-4">Unit Breakdown</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Unit</th>
+                        <th>Progress</th>
+                        <th>Accuracy</th>
+                        <th>Mastery</th>
+                        <th class="text-end">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in unit_progress %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold">{{ item.unit.name }}</div>
+                            <small class="text-muted">{{ item.unit.code }}</small>
+                        </td>
+                        <td style="width: 250px;">
+                            <div class="d-flex align-items-center">
+                                <div class="progress flex-grow-1" style="height: 6px;">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ item.percentage }}%" aria-valuenow="{{ item.percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <span class="ms-2 small fw-bold">{{ item.percentage }}%</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="fw-bold {% if item.accuracy >= 75 %}text-success{% elif item.accuracy >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ item.accuracy }}%
+                            </span>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ item.completed }}/{{ item.total }} topics</small>
+                        </td>
+                        <td class="text-end">
+                            {% if item.percentage == 100 %}
+                                <span class="badge bg-success">Completed</span>
+                            {% elif item.percentage > 0 %}
+                                <span class="badge bg-primary">In Progress</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Not Started</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            Enroll in units to see detailed analytics.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Study Time Chart
+    const ctxStudy = document.getElementById('studyTimeChart').getContext('2d');
+    new Chart(ctxStudy, {
+        type: 'line',
+        data: {
+            labels: {{ last_7_days|safe }},
+            datasets: [{
+                label: 'Study Minutes',
+                data: {{ study_time_data|safe }},
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#667eea'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { display: false } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Confidence Chart
+    const ctxConfidence = document.getElementById('confidenceChart').getContext('2d');
+    new Chart(ctxConfidence, {
+        type: 'doughnut',
+        data: {
+            labels: ['Not Started', 'Weak', 'Average', 'Good', 'Excellent'],
+            datasets: [{
+                data: {{ confidence_data|safe }},
+                backgroundColor: [
+                    '#e2e8f0', // Not Started
+                    '#feb2b2', // Weak
+                    '#fbd38d', // Average
+                    '#9ae6b4', // Good
+                    '#63b3ed'  // Excellent
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { boxWidth: 12, padding: 15 }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+</script>
+{% endblock %}

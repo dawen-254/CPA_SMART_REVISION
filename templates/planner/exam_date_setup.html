@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Setup Exam Date - CPA Smart Revision{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body p-5 text-center">
+                    <div class="mb-4">
+                        <i class="bi bi-calendar-event text-primary" style="font-size: 3rem;"></i>
+                    </div>
+                    <h2 class="mb-3">Set Your Exam Date</h2>
+                    <p class="text-muted mb-4">
+                        Tell us when you're sitting for your CPA exams, and we'll generate a personalized study schedule just for you.
+                    </p>
+                    
+                    <form action="{% url 'planner:set_exam_date' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="exam_date" class="form-label">Exam Date</label>
+                            <input type="date" name="exam_date" id="exam_date" class="form-control form-control-lg" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Generate Study Plan <i class="bi bi-magic ms-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

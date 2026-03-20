@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Flashcards: {{ topic.title }} - CPA Smart Revision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .flashcard-container {
+        perspective: 1000px;
+        width: 100%;
+        max-width: 600px;
+        height: 350px;
+        margin: 2rem auto;
+        cursor: pointer;
+    }
+
+    .flashcard-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border-radius: 20px;
+    }
+
+    .flashcard-container.flipped .flashcard-inner {
+        transform: rotateY(180deg);
+    }
+
+    .flashcard-front, .flashcard-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        border-radius: 20px;
+        background: white;
+        border: 2px solid #e2e8f0;
+    }
+
+    .flashcard-back {
+        transform: rotateY(180deg);
+        background: #f8fafc;
+        border-color: #667eea;
+    }
+
+    .flashcard-content {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .rating-buttons {
+        display: none;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .rating-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s;
+        border: none;
+    }
+
+    .btn-q0 { background: #feb2b2; color: #9b2c2c; }
+    .btn-q1 { background: #fbd38d; color: #9c4221; }
+    .btn-q2 { background: #faf089; color: #744210; }
+    .btn-q3 { background: #9ae6b4; color: #22543d; }
+    .btn-q4 { background: #68d391; color: #22543d; }
+    .btn-q5 { background: #48bb78; color: white; }
+
+    .rating-btn:hover {
+        transform: translateY(-2px);
+        filter: brightness(0.9);
+    }
+
+    .progress-bar-container {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb justify-content-center">
+                    <li class="breadcrumb-item"><a href="{% url 'revision:dashboard' %}">Revision</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'revision:topic_detail' topic.slug %}">{{ topic.title }}</a></li>
+                    <li class="breadcrumb-item active">Flashcards</li>
+                </ol>
+            </nav>
+
+            <h2 class="fw-bold mb-2">Flashcards</h2>
+            <p class="text-muted mb-4">{{ topic.title }}</p>
+
+            {% if no_flashcards %}
+                <div class="card border-0 shadow-sm p-5 rounded-4">
+                    <i class="bi bi-card-text text-muted mb-3" style="font-size: 4rem;"></i>
+                    <h3>No Flashcards Yet</h3>
+                    <p class="text-muted mb-4">Master this topic with AI-generated flashcards and spaced repetition.</p>
+                    <a href="{% url 'revision:generate_flashcards' topic.id %}" class="btn btn-primary btn-lg px-5 py-3 rounded-pill fw-bold">
+                        <i class="bi bi-magic me-2"></i> Generate with AI
+                    </a>
+                </div>
+            {% else %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-muted" id="card-counter">Card 1 of {{ flashcards|length }}</span>
+                    <span class="badge bg-primary rounded-pill">{{ due_count }} due for review</span>
+                </div>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progress-fill" style="width: {% widthratio 1 flashcards|length 100 %}%"></div>
+                </div>
+
+                <div id="flashcard-deck">
+                    {% for card in flashcards %}
+                    <div class="flashcard-item" id="card-{{ forloop.index0 }}" style="display: {% if forloop.first %}block{% else %}none{% endif %};">
+                        <div class="flashcard-container" onclick="flipCard(this)">
+                            <div class="flashcard-inner">
+                                <div class="flashcard-front">
+                                    <div class="flashcard-content">{{ card.front }}</div>
+                                    <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4 text-muted small">
+                                        <i class="bi bi-arrow-repeat me-1"></i> Click to flip
+                                    </div>
+                                </div>
+                                <div class="flashcard-back">
+                                    <div class="flashcard-content">{{ card.back }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rating-buttons" id="ratings-{{ forloop.index0 }}">
+                            <p class="w-100 text-muted small mb-3">How well did you know this?</p>
+                            <button class="rating-btn btn-q0" onclick="rateCard({{ card.id }}, 0, {{ forloop.index0 }})">Forgot</button>
+                            <button class="rating-btn btn-q1" onclick="rateCard({{ card.id }}, 1, {{ forloop.index0 }})">Wrong</button>
+                            <button class="rating-btn btn-q2" onclick="rateCard({{ card.id }}, 2, {{ forloop.index0 }})">Hard</button>
+                            <button class="rating-btn btn-q3" onclick="rateCard({{ card.id }}, 3, {{ forloop.index0 }})">OK</button>
+                            <button class="rating-btn btn-q4" onclick="rateCard({{ card.id }}, 4, {{ forloop.index0 }})">Good</button>
+                            <button class="rating-btn btn-q5" onclick="rateCard({{ card.id }}, 5, {{ forloop.index0 }})">Easy</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div id="study-complete" style="display: none;" class="card border-0 shadow-sm p-5 rounded-4 mt-4">
+                    <i class="bi bi-trophy text-warning mb-3" style="font-size: 4rem;"></i>
+                    <h3>Study Session Complete!</h3>
+                    <p class="text-muted">You've reviewed all cards for this session. Spaced repetition will show them again when they're due.</p>
+                    <div class="mt-4">
+                        <a href="{% url 'revision:topic_detail' topic.slug %}" class="btn btn-outline-primary px-4 py-2 me-2">Back to Topic</a>
+                        <a href="{% url 'revision:flashcard_study' topic.id %}" class="btn btn-primary px-4 py-2">Study Again</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentCardIndex = 0;
+    const totalCards = {{ flashcards|length|default:0 }};
+
+    function flipCard(container) {
+        container.classList.toggle('flipped');
+        const ratings = container.nextElementSibling;
+        if (container.classList.contains('flipped')) {
+            ratings.style.display = 'flex';
+        } else {
+            ratings.style.display = 'none';
+        }
+    }
+
+    function rateCard(cardId, quality, index) {
+        // Send to server
+        const formData = new FormData();
+        formData.append('card_id', cardId);
+        formData.append('quality', quality);
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                nextCard();
+            }
+        });
+    }
+
+    function nextCard() {
+        const currentCard = document.getElementById(`card-${currentCardIndex}`);
+        currentCard.style.display = 'none';
+        
+        currentCardIndex++;
+        
+        if (currentCardIndex < totalCards) {
+            const nextCard = document.getElementById(`card-${currentCardIndex}`);
+            nextCard.style.display = 'block';
+            
+            // Update counter and progress bar
+            document.getElementById('card-counter').textContent = `Card ${currentCardIndex + 1} of ${totalCards}`;
+            const progress = ((currentCardIndex + 1) / totalCards) * 100;
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+        } else {
+            document.getElementById('flashcard-deck').style.display = 'none';
+            document.getElementById('card-counter').style.display = 'none';
+            document.getElementById('study-complete').style.display = 'block';
+        }
+    }
+</script>
+{% endblock %}

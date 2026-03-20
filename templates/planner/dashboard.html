@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% block title %}Study Planner - CPA Smart Revision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .calendar-container {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .calendar-header {
+        background: #667eea;
+        color: white;
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        border-left: 1px solid #edf2f7;
+        border-top: 1px solid #edf2f7;
+    }
+    .calendar-day-header {
+        padding: 1rem;
+        text-align: center;
+        background: #f8fafc;
+        font-weight: 600;
+        color: #4a5568;
+        border-right: 1px solid #edf2f7;
+        border-bottom: 1px solid #edf2f7;
+    }
+    .calendar-day {
+        min-height: 120px;
+        padding: 0.5rem;
+        border-right: 1px solid #edf2f7;
+        border-bottom: 1px solid #edf2f7;
+        transition: background 0.2s;
+    }
+    .calendar-day:hover {
+        background: #fdfdfd;
+    }
+    .calendar-day.empty {
+        background: #fcfcfc;
+    }
+    .calendar-day.today {
+        background: #ebf4ff;
+    }
+    .day-number {
+        font-weight: 600;
+        color: #718096;
+        margin-bottom: 0.5rem;
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        text-align: center;
+        line-height: 24px;
+    }
+    .calendar-day.today .day-number {
+        background: #667eea;
+        color: white;
+        border-radius: 50%;
+    }
+    .task-item {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        margin-bottom: 0.25rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: transform 0.1s;
+    }
+    .task-item:hover {
+        transform: scale(1.02);
+    }
+    .task-study { background: #e9d8fd; color: #553c9a; border-left: 3px solid #805ad5; }
+    .task-revision { background: #fefcbf; color: #744210; border-left: 3px solid #d69e2e; }
+    .task-practice { background: #c6f6d5; color: #22543d; border-left: 3px solid #38a169; }
+    .task-completed { 
+        text-decoration: line-through; 
+        opacity: 0.6; 
+        background: #edf2f7 !important; 
+        color: #718096 !important;
+        border-left-color: #a0aec0 !important;
+    }
+    .planner-sidebar-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="calendar-container mb-4">
+                <div class="calendar-header">
+                    <h4 class="mb-0">{{ month_name }} {{ year }}</h4>
+                    <div class="btn-group">
+                        <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-sm btn-light">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                        <a href="?month={{ today.month }}&year={{ today.year }}" class="btn btn-sm btn-light">Today</a>
+                        <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-sm btn-light">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">Sun</div>
+                    <div class="calendar-day-header">Mon</div>
+                    <div class="calendar-day-header">Tue</div>
+                    <div class="calendar-day-header">Wed</div>
+                    <div class="calendar-day-header">Thu</div>
+                    <div class="calendar-day-header">Fri</div>
+                    <div class="calendar-day-header">Sat</div>
+                    
+                    {% for week in calendar %}
+                        {% for day_data in week %}
+                            {% if day_data.day == 0 %}
+                                <div class="calendar-day empty"></div>
+                            {% else %}
+                                <div class="calendar-day {% if day_data.is_today %}today{% endif %}">
+                                    <span class="day-number">{{ day_data.day }}</span>
+                                    <div class="tasks-container">
+                                        {% for task in day_data.tasks %}
+                                            <a href="{% url 'planner:toggle_task' task.id %}" class="task-item task-{{ task.task_type }} {% if task.is_completed %}task-completed{% endif %}" title="{{ task.topic.title }}">
+                                                <i class="bi {% if task.is_completed %}bi-check-circle-fill{% else %}bi-circle{% endif %}"></i>
+                                                <span class="text-truncate">{{ task.topic.title }}</span>
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="planner-sidebar-card">
+                <h5><i class="bi bi-info-circle text-primary me-2"></i> Exam Countdown</h5>
+                <hr>
+                <div class="text-center py-3">
+                    <h1 class="display-4 fw-bold text-primary mb-0">{{ profile.days_until_exam }}</h1>
+                    <p class="text-muted">Days until exam</p>
+                    <p class="small">Exam Date: <strong>{{ profile.exam_date|date:"M d, Y" }}</strong></p>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#examDateModal">
+                    Update Exam Date
+                </button>
+            </div>
+            
+            <div class="planner-sidebar-card">
+                <h5><i class="bi bi-lightning-charge text-warning me-2"></i> Quick Actions</h5>
+                <hr>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'planner:regenerate' %}" class="btn btn-light text-start btn-sm" onclick="return confirm('This will recreate your schedule. Uncompleted tasks will be deleted. Continue?')">
+                        <i class="bi bi-arrow-repeat me-2"></i> Regenerate Schedule
+                    </a>
+                    <a href="{% url 'accounts:dashboard' %}" class="btn btn-light text-start btn-sm">
+                        <i class="bi bi-speedometer2 me-2"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <div class="planner-sidebar-card">
+                <h5><i class="bi bi-tags text-success me-2"></i> Legend</h5>
+                <hr>
+                <div class="d-flex flex-column gap-2">
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-primary p-2 me-2" style="width: 12px; height: 12px; border-radius: 3px;"></span>
+                        <span class="small">Initial Study</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-warning p-2 me-2" style="width: 12px; height: 12px; border-radius: 3px;"></span>
+                        <span class="small">Revision</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-success p-2 me-2" style="width: 12px; height: 12px; border-radius: 3px;"></span>
+                        <span class="small">Practice Questions</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exam Date Modal -->
+<div class="modal fade" id="examDateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Exam Date</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{% url 'planner:set_exam_date' %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="exam_date" class="form-label">New Exam Date</label>
+                        <input type="date" name="exam_date" id="exam_date" class="form-control" value="{{ profile.exam_date|date:'Y-m-d' }}" required>
+                    </div>
+                    <p class="small text-muted">Updating your exam date will automatically regenerate your study schedule.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update & Regenerate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

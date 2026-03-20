@@ -1,0 +1,443 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ unit.name }} - CPA Smart Revision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .unit-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .unit-info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        border-left: 4px solid #667eea;
+    }
+
+    .unit-code {
+        display: inline-block;
+        background: #667eea;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .unit-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1rem;
+    }
+
+    .unit-meta {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #4a5568;
+    }
+
+    .meta-icon {
+        font-size: 1.2rem;
+        color: #667eea;
+    }
+
+    .unit-description {
+        color: #4a5568;
+        line-height: 1.8;
+        margin-top: 1rem;
+        font-size: 1rem;
+    }
+
+    .topics-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .topics-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .topic-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-left: 4px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        background: #f7fafc;
+        transition: all 0.3s;
+    }
+
+    .topic-item:hover {
+        border-left-color: #667eea;
+        background: white;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    }
+
+    .topic-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        background: #667eea;
+        color: white;
+        border-radius: 50%;
+        font-weight: 600;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .topic-content {
+        flex: 1;
+    }
+
+    .topic-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.25rem;
+    }
+
+    .topic-meta {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: #718096;
+    }
+
+    .topic-difficulty {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .difficulty-easy {
+        background: #c6f6d5;
+        color: #22543d;
+    }
+
+    .difficulty-medium {
+        background: #bee3f8;
+        color: #2c5282;
+    }
+
+    .difficulty-hard {
+        background: #fed7d7;
+        color: #742a2a;
+    }
+
+    .topic-progress {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+
+    .progress-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .progress-completed {
+        background: #c6f6d5;
+        color: #22543d;
+    }
+
+    .progress-pending {
+        background: #e2e8f0;
+        color: #2d3748;
+    }
+
+    .topic-link-btn {
+        padding: 0.5rem 1rem;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    .topic-link-btn:hover {
+        background: #764ba2;
+        transform: translateY(-2px);
+    }
+
+    .enrollment-banner {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .enrollment-banner-icon {
+        font-size: 1.5rem;
+        color: #d97706;
+        flex-shrink: 0;
+    }
+
+    .enrollment-banner-content {
+        flex: 1;
+    }
+
+    .enrollment-banner-content h5 {
+        margin: 0 0 0.25rem 0;
+        color: #92400e;
+        font-weight: 600;
+    }
+
+    .enrollment-banner-content p {
+        margin: 0;
+        color: #b45309;
+        font-size: 0.9rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #718096;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        opacity: 0.3;
+        margin-bottom: 1rem;
+    }
+
+    .breadcrumb-nav {
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .unit-header {
+            padding: 2rem 0;
+        }
+
+        .unit-title {
+            font-size: 1.5rem;
+        }
+
+        .unit-meta {
+            gap: 1rem;
+        }
+
+        .topic-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .topic-progress {
+            margin-left: 0;
+            margin-top: 0.75rem;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Unit Header -->
+<div class="unit-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="unit-code">{{ unit.code }}</div>
+                <h1 class="unit-title mb-0">{{ unit.name }}</h1>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                {% if is_enrolled %}
+                    <span class="badge bg-success">
+                        <i class="bi bi-check-circle-fill"></i> Enrolled
+                    </span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">
+                        <i class="bi bi-exclamation-circle"></i> Not Enrolled
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="breadcrumb-nav">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'content:unit_list' %}">Levels</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'content:level_detail' unit.level.id unit.part.name %}">{{ unit.level.get_name_display }} - {{ unit.part.get_name_display }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ unit.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Unit Information Card -->
+    <div class="unit-info-card">
+        <p class="unit-description">{{ unit.description }}</p>
+        
+        <div class="unit-meta">
+            <div class="meta-item">
+                <i class="bi bi-clock meta-icon"></i>
+                <span><strong>{{ unit.estimated_hours }}h</strong> estimated study time</span>
+            </div>
+            <div class="meta-item">
+                <i class="bi bi-bar-chart meta-icon"></i>
+                <span><strong>{{ unit.difficulty_level|title }}</strong> difficulty</span>
+            </div>
+            <div class="meta-item">
+                <i class="bi bi-file-text meta-icon"></i>
+                <span><strong>{{ topics.count }}</strong> topics</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enrollment Warning Banner -->
+    {% if not is_enrolled %}
+    <div class="enrollment-banner">
+        <div class="enrollment-banner-icon">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <div class="enrollment-banner-content">
+            <h5>Not Enrolled Yet</h5>
+            <p>You need to enroll in this level to access all topics and track your progress. Head to the <a href="{% url 'content:level_detail' unit.level.id unit.part.name %}" style="color: #92400e; text-decoration: underline;">Level Details</a> page to enroll.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Topics Section -->
+    <div class="topics-section">
+        <h3 class="topics-title">
+            <i class="bi bi-list-check"></i> Topics ({{ topics.count }})
+        </h3>
+
+        {% if topics_data %}
+            {% for item in topics_data %}
+                {% if item.is_syllabus %}
+                    <div class="topic-item" style="border-left-color: #f59e0b; background: #fffbeb;">
+                        <div class="topic-number" style="background: #f59e0b;">
+                            <i class="bi bi-file-pdf"></i>
+                        </div>
+                        
+                        <div class="topic-content">
+                            <div class="topic-title">Syllabus - {{ item.unit_name }}</div>
+                            <p style="color: #718096; margin: 0.5rem 0 0 0; font-size: 0.9rem;">Official unit syllabus and course outline</p>
+                            
+                            <div class="topic-meta">
+                                <span>
+                                    <i class="bi bi-file-pdf"></i> PDF Document
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="topic-progress">
+                            <a href="{{ item.syllabus_file.url }}" class="topic-link-btn" target="_blank">
+                                Download <i class="bi bi-download"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    {% with topic=item.topic is_completed=item.is_completed %}
+                    <div class="topic-item">
+                        <div class="topic-number">{{ forloop.counter }}</div>
+                        
+                        <div class="topic-content">
+                            <div class="topic-title">{{ topic.title }}</div>
+                            {% if topic.summary %}
+                                <p style="color: #718096; margin: 0.5rem 0 0 0; font-size: 0.9rem;">{{ topic.summary|truncatewords:15 }}</p>
+                            {% endif %}
+                            
+                            <div class="topic-meta">
+                                <span>
+                                    <i class="bi bi-hourglass-split"></i> {{ topic.estimated_minutes }} min
+                                </span>
+                                {% if topic.difficulty %}
+                                    <span class="topic-difficulty difficulty-{{ topic.difficulty }}">
+                                        <i class="bi bi-graph-up"></i> {{ topic.difficulty|title }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if is_enrolled %}
+                            <div class="topic-progress">
+                                {% if is_completed %}
+                                    <span class="progress-badge progress-completed">
+                                        <i class="bi bi-check-circle-fill"></i> Completed
+                                    </span>
+                                {% else %}
+                                    <span class="progress-badge progress-pending">
+                                        <i class="bi bi-circle"></i> Pending
+                                    </span>
+                                {% endif %}
+                                <a href="{% url 'revision:topic_detail' topic.slug %}" class="topic-link-btn">
+                                    View <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endwith %}
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-inbox empty-state-icon"></i>
+                <p>No topics available for this unit yet.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="mt-4 mb-4">
+        <a href="{% url 'content:level_detail' unit.level.id unit.part.name %}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> Back to Level
+        </a>
+        {% if is_enrolled and topics %}
+            <a href="{% url 'revision:topic_detail' topics.0.slug %}" class="btn btn-primary ms-2">
+                <i class="bi bi-play-fill"></i> Start Learning
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

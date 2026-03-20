@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Levels - CPA Smart Revision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .levels-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .level-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .level-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .level-icon {
+        font-size: 2rem;
+        color: #667eea;
+    }
+
+    .level-description {
+        color: #718096;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .parts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+
+    .part-btn {
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: 2px solid #e2e8f0;
+        background: white;
+        color: #2d3748;
+        font-weight: 600;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .part-btn:hover {
+        border-color: #667eea;
+        background: #f7fafc;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        color: #667eea;
+    }
+
+    .part-icon {
+        font-size: 1.5rem;
+    }
+
+    .part-label {
+        font-size: 0.95rem;
+    }
+
+    .enrolled-badge {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: #48bb78;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .part-btn.enrolled {
+        border-color: #48bb78;
+        background: #f0fdf4;
+        color: #22543d;
+    }
+
+    .part-btn.enrolled:hover {
+        border-color: #38a169;
+        background: #e6fffa;
+    }
+
+    @media (max-width: 768px) {
+        .levels-header {
+            padding: 2rem 0;
+        }
+
+        .parts-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="levels-header">
+    <div class="container">
+        <h1 class="mb-2">
+            <i class="bi bi-book"></i> CPA Exam Levels
+        </h1>
+        <p class="mb-0 opacity-75">
+            Choose your level and part to start studying
+        </p>
+    </div>
+</div>
+
+<div class="container">
+    {% for level in levels %}
+        <div class="level-card">
+            <h2 class="level-title">
+                <span class="level-icon">
+                    {% if level.name == "foundation" %}
+                        <i class="bi bi-1-circle-fill"></i>
+                    {% elif level.name == "intermediate" %}
+                        <i class="bi bi-2-circle-fill"></i>
+                    {% else %}
+                        <i class="bi bi-3-circle-fill"></i>
+                    {% endif %}
+                </span>
+                {{ level.get_name_display }}
+            </h2>
+
+            <p class="level-description">{{ level.description }}</p>
+
+            <div class="parts-grid">
+                {% for part in level.parts.all %}
+                    <a href="{% url 'content:level_detail' level.id part.name %}" class="part-btn {% if part.is_user_enrolled %}enrolled{% endif %}">
+                        {% if part.is_user_enrolled %}
+                            <span class="enrolled-badge">Enrolled</span>
+                        {% endif %}
+                        <span class="part-icon">
+                            {% if part.name == "part_a" %}
+                                <i class="bi bi-a-square-fill"></i>
+                            {% else %}
+                                <i class="bi bi-b-square-fill"></i>
+                            {% endif %}
+                        </span>
+                        <span class="part-label">{{ part.get_name_display }}</span>
+                        <small class="text-muted">{{ part.units.count }} units</small>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+
+    {% if not levels %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No levels available yet.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

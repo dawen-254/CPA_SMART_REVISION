@@ -1,0 +1,675 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - CPA Smart Revision{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border-left: 4px solid #667eea;
+        transition: transform 0.3s, box-shadow 0.3s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card.primary { border-left-color: #667eea; }
+    .stat-card.success { border-left-color: #48bb78; }
+    .stat-card.warning { border-left-color: #f6ad55; }
+    .stat-card.danger { border-left-color: #f56565; }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+    }
+
+    .stat-label {
+        color: #718096;
+        font-size: 0.95rem;
+        margin-top: 0.5rem;
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        opacity: 0.2;
+        margin-bottom: 1rem;
+    }
+
+    .progress-item {
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-title {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .progress-bar-container {
+        background-color: #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
+        height: 8px;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s;
+        border: 1px solid #e2e8f0;
+    }
+
+    .feature-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #667eea;
+    }
+
+    .feature-card h5 {
+        margin-bottom: 0.5rem;
+        color: #2d3748;
+    }
+
+    .feature-card p {
+        color: #718096;
+        font-size: 0.9rem;
+    }
+
+    .study-streak {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .streak-number {
+        font-size: 3.5rem;
+        font-weight: 700;
+        display: block;
+    }
+
+    .streak-label {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .recent-activity {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 1rem 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-icon {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+        min-width: 2rem;
+    }
+
+    .activity-content h6 {
+        margin-bottom: 0.25rem;
+        color: #2d3748;
+    }
+
+    .activity-time {
+        color: #a0aec0;
+        font-size: 0.85rem;
+    }
+
+    .subscription-banner {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .btn-group-vertical .btn {
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #718096;
+    }
+
+    .enrollment-card {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #667eea;
+    }
+
+    .enrollment-card h6 {
+        margin-bottom: 0.5rem;
+        color: #2d3748;
+    }
+
+    .enrollment-card .enrollment-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .enrollment-meta-text {
+        color: #4a5568;
+        font-size: 0.9rem;
+    }
+
+    .enrollment-meta-units {
+        display: inline-block;
+        background: #667eea;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        opacity: 0.3;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 2rem 0;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-1">
+                    <i class="bi bi-speedometer2"></i> Welcome back,{{ user.full_name|truncatewords:1 }}!
+                </h1>
+                <p class="mb-0 opacity-75">
+                    <i class="bi bi-calendar-event"></i> {{ today|date:"l, F j, Y" }}
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                {% if enrolled_units %}
+                <div class="search-container d-flex gap-2">
+                    <div style="position: relative; flex: 1; max-width: 300px;">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            class="form-control form-control-sm" 
+                            placeholder="Search topics or questions..."
+                            style="padding-right: 2.5rem;"
+                        >
+                        <i class="bi bi-search" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: #6c757d; pointer-events: none;"></i>
+                        <div id="searchResults" style="
+                            position: absolute;
+                            top: 100%;
+                            left: 0;
+                            right: 0;
+                            background: white;
+                            border: 1px solid #dee2e6;
+                            border-top: none;
+                            border-radius: 0 0 4px 4px;
+                            max-height: 400px;
+                            overflow-y: auto;
+                            display: none;
+                            z-index: 1000;
+                            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                        "></div>
+                    </div>
+                    <a href="{% url 'accounts:profile' %}" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-person-circle"></i> Profile
+                    </a>
+                </div>
+                {% else %}
+                <a href="{% url 'content:unit_list' %}" class="btn btn-light btn-sm me-2">
+                    <i class="bi bi-book"></i> Start Studying
+                </a>
+                <a href="{% url 'accounts:profile' %}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-person-circle"></i> Profile
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Stats Row -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card primary">
+                <i class="bi bi-book-half stat-icon"></i>
+                <div class="stat-number">{{ topics_completed|default:0 }}</div>
+                <div class="stat-label">Topics Completed</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card success">
+                <i class="bi bi-check-circle stat-icon"></i>
+                <div class="stat-number">{{ questions_answered|default:0 }}</div>
+                <div class="stat-label">Questions Answered</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card warning">
+                <i class="bi bi-calendar-event stat-icon"></i>
+                <div class="stat-number">
+                    {% if days_until_exam is not None %}
+                        {% if days_until_exam == 0 %}
+                            Today!
+                        {% else %}
+                            {{ days_until_exam }}d
+                        {% endif %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+                <div class="stat-label">Days Until Exam</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card danger">
+                <i class="bi bi-percent stat-icon"></i>
+                <div class="stat-number">{{ accuracy_rate|default:0 }}%</div>
+                <div class="stat-label">Accuracy Rate</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row mb-4">
+        <!-- Progress Section -->
+        <div class="col-lg-8">
+            <!-- Today's Study Tasks -->
+            {% if today_tasks %}
+            <div class="bg-white rounded-3 p-4 mb-4 border border-light shadow-sm" style="border-left: 4px solid #667eea !important;">
+                <h5 class="mb-3 d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-calendar-check text-primary"></i> Today's Study Plan</span>
+                    <a href="{% url 'planner:dashboard' %}" class="btn btn-sm btn-link text-decoration-none">View Full Planner</a>
+                </h5>
+                <div class="list-group list-group-flush">
+                    {% for task in today_tasks %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                {% if task.is_completed %}
+                                <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                                {% else %}
+                                <i class="bi bi-circle text-muted fs-4"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="mb-0 {% if task.is_completed %}text-decoration-line-through text-muted{% endif %}">
+                                    {{ task.topic.title }}
+                                </h6>
+                                <small class="text-muted">
+                                    <span class="badge bg-light text-dark border me-1">{{ task.get_task_type_display }}</span>
+                                    {{ task.topic.unit.name }}
+                                </small>
+                            </div>
+                        </div>
+                        {% if not task.is_completed %}
+                        <a href="{% url 'content:unit_detail' task.topic.unit.slug %}#topic-{{ task.topic.slug }}" class="btn btn-primary btn-sm rounded-pill px-3">
+                            Start Studying
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Enrolled Units Grid Section -->
+            {% if enrolled_units %}
+            <div class="bg-white rounded-3 p-4 mb-4 border border-light">
+                <h5 class="mb-3">
+                    <i class="bi bi-bookmark-check"></i> Your Enrolled Units
+                </h5>
+                <div class="row">
+                    {% for item in enrolled_units %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-0 shadow-sm" style="transition: all 0.3s; cursor: pointer; overflow: hidden;">
+                            {% if item.unit.thumbnail %}
+                            <div style="position: relative; width: 100%; height: 200px; overflow: hidden; background: #f0f0f0;">
+                                <img src="{{ item.unit.thumbnail.url }}" alt="{{ item.unit.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                <div style="position: absolute; top: 0.75rem; right: 0.75rem;">
+                                    <span style="display: inline-block; background: #667eea; color: white; padding: 0.35rem 0.75rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem;">{{ item.unit.code }}</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="card-body" style="display: flex; flex-direction: column;">
+                                {% if not item.unit.thumbnail %}
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <span style="display: inline-block; background: #667eea; color: white; padding: 0.25rem 0.75rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem;">{{ item.unit.code }}</span>
+                                </div>
+                                {% endif %}
+                                <h6 class="card-title" style="margin-bottom: 0.5rem; font-weight: 600;">{{ item.unit.name }}</h6>
+                                <p class="card-text text-muted" style="font-size: 0.9rem; margin-bottom: 1rem; flex-grow: 1;">
+                                    {{ item.unit.description|truncatewords:15 }}
+                                </p>
+                                
+                                <!-- Progress Bar -->
+                                <div style="margin-bottom: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <small class="text-muted">Progress</small>
+                                        <small class="text-muted"><strong>{{ item.completion_percentage }}%</strong></small>
+                                    </div>
+                                    <div style="background-color: #e2e8f0; border-radius: 8px; overflow: hidden; height: 6px;">
+                                        <div class="bg-success" style="width: {{ item.completion_percentage }}%; height: 100%;"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Meta Info -->
+                                <div style="display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 0.85rem; color: #718096;">
+                                    <span><i class="bi bi-file-text"></i> {{ item.total_topics }} topics</span>
+                                    <span><i class="bi bi-check-circle"></i> {{ item.completed_topics }} completed</span>
+                                </div>
+                                
+                                <!-- View Unit Button -->
+                                <a href="{% url 'content:unit_detail' item.unit.slug %}" class="btn btn-primary btn-sm" style="align-self: flex-start;">
+                                    <i class="bi bi-arrow-right"></i> View Unit
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="bg-white rounded-3 p-4 mb-4 border border-light">
+                <div class="empty-state">
+                    <i class="bi bi-inbox empty-state-icon"></i>
+                    <p>No enrollments yet. Choose a level to get started!</p>
+                    <a href="{% url 'content:unit_list' %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-arrow-right"></i> Browse Levels
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="bg-white rounded-3 p-4 mb-4 border border-light">
+                <h5 class="mb-3">
+                    <i class="bi bi-graph-up"></i> Learning Progress
+                </h5>
+
+                {% if unit_progress %}
+                    {% for unit in unit_progress %}
+                    <div class="progress-item">
+                        <div class="progress-title">
+                            <span>{{ unit.name }}</span>
+                            <span class="text-muted">{{ unit.completion_percentage|default:0 }}%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar bg-success" style="width: {{ unit.completion_percentage|default:0 }} %"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-inbox empty-state-icon"></i>
+                        <p>No progress yet. Start studying to see your progress here!</p>
+                        <a href="{% url 'content:unit_list' %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-arrow-right"></i> Start Learning
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="recent-activity mb-4">
+                <h5 class="mb-3">
+                    <i class="bi bi-clock-history"></i> Recent Activity
+                </h5>
+
+                {% if recent_sessions %}
+                    {% for session in recent_sessions %}
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="bi bi-bookmark-check text-success"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6>{{ session.topic }}</h6>
+                            <div class="activity-time">
+                                <i class="bi bi-calendar"></i> {{ session.date|date:"M d, Y h:i A" }}
+                            </div>
+                        </div>
+                        <span class="badge bg-light text-dark">{{ session.duration }} min</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state py-3">
+                        <p class="mb-0">No study sessions yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Study Streak -->
+            <div class="study-streak mb-4">
+                <span class="streak-number">
+                    <i class="bi bi-fire" style="color: #fbbf24;"></i> {{ study_streak|default:0 }}
+                </span>
+                <div class="streak-label">Day Streak! Keep it going! 🚀</div>
+            </div>
+
+            <!-- Subscription Status -->
+            {% if user.subscription %}
+            <div class="subscription-banner mb-4">
+                <h6 class="mb-2">
+                    <i class="bi bi-star-fill"></i> {{ user.subscription.plan }} Plan
+                </h6>
+                <p class="mb-2 small text-opacity-75">
+                    You have access to all premium features
+                </p>
+                <small class="text-opacity-75">
+                    Renews on {{ user.subscription.end_date|date:"M d, Y" }}
+                </small>
+            </div>
+            {% else %}
+            <div class="subscription-banner mb-4">
+                <h6 class="mb-2">
+                    <i class="bi bi-unlock"></i> Free Plan
+                </h6>
+                <p class="mb-3 small">Upgrade to Premium to unlock all features</p>
+                <a href="{% url 'subscriptions:plans' %}" class="btn btn-light btn-sm">
+                    View Plans <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-3 p-3 border border-light">
+                <h6 class="mb-3">
+                    <i class="bi bi-lightning"></i> Quick Actions
+                </h6>
+                <div class="btn-group-vertical w-100">
+                    <a href="{% url 'ai_tutor:chat' %}" class="btn btn-outline-primary btn-sm text-start">
+                        <i class="bi bi-chat-dots"></i> Ask AI Tutor
+                    </a>
+                    <a href="{% url 'planner:dashboard' %}" class="btn btn-outline-primary btn-sm text-start">
+                        <i class="bi bi-calendar3"></i> Study Planner
+                    </a>
+                    <a href="{% url 'analytics:dashboard' %}" class="btn btn-outline-primary btn-sm text-start">
+                        <i class="bi bi-bar-chart"></i> Analytics
+                    </a>
+                    <a href="{% url 'content:unit_list' %}" class="btn btn-outline-primary btn-sm text-start">
+                        <i class="bi bi-book"></i> Browse Topics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Row -->
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <h5>AI Tutor</h5>
+                <p>Get instant answers to exam questions with AI assistance</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <h5>Study Plans</h5>
+                <p>Create personalized study schedules and track progress</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-bar-chart"></i>
+                </div>
+                <h5>Analytics</h5>
+                <p>View detailed performance metrics and identify weak areas</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-award"></i>
+                </div>
+                <h5>Achievements</h5>
+                <p>Earn badges and rewards for your learning milestones</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row">
+        <div class="col-12">
+            <div class="bg-light rounded-3 p-4 text-center">
+                <h5 class="mb-2">Ready to ace your CPA exams?</h5>
+                <p class="text-muted mb-3">Start with our comprehensive revision materials and AI-powered study tools</p>
+                <a href="{% url 'content:unit_list' %}" class="btn btn-primary">
+                    <i class="bi bi-book-half"></i> Start Studying Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    let searchTimeout;
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            
+            if (query.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+            
+            searchTimeout = setTimeout(() => {
+                fetch(`/content/search/?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.results.length === 0) {
+                            searchResults.innerHTML = '<div style="padding: 1rem; text-align: center; color: #6c757d;">No results found</div>';
+                        } else {
+                            searchResults.innerHTML = data.results.map(result => `
+                                <a href="${result.url}" style="
+                                    display: block;
+                                    padding: 0.75rem;
+                                    border-bottom: 1px solid #dee2e6;
+                                    text-decoration: none;
+                                    color: inherit;
+                                    transition: background-color 0.2s;
+                                " onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='transparent'">
+                                    <div style="font-weight: 500; font-size: 0.95rem; color: #2d3748;">
+                                        ${result.title}
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: #718096; margin-top: 0.25rem;">
+                                        <span style="display: inline-block; background: #e2e8f0; padding: 0.125rem 0.5rem; border-radius: 3px; margin-right: 0.5rem;">
+                                            ${result.type === 'topic' ? '📚 Topic' : '❓ Question'}
+                                        </span>
+                                        <span>${result.unit}</span>
+                                    </div>
+                                </a>
+                            `).join('');
+                        }
+                        searchResults.style.display = 'block';
+                    })
+                    .catch(error => {
+                        console.error('Search error:', error);
+                        searchResults.innerHTML = '<div style="padding: 1rem; text-align: center; color: #dc3545;">Error performing search</div>';
+                        searchResults.style.display = 'block';
+                    });
+            }, 300);
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!searchInput.contains(event.target) && !searchResults.contains(event.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+
+        searchInput.addEventListener('focus', function() {
+            if (searchInput.value.trim().length >= 2) {
+                searchResults.style.display = 'block';
+            }
+        });
+    }
+</script>
+{% endblock %}
+{% endblock %}
